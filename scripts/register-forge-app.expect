@@ -1,0 +1,24 @@
+#!/usr/bin/expect -f
+
+set timeout 60
+spawn forge register
+
+expect {
+    "Name your app" {
+        send "AI News Aggregator\r"
+        exp_continue
+    }
+    "Press Ctrl+C to cancel" {
+        exp_continue
+    }
+    timeout {
+        puts "Timeout waiting for prompt"
+        exit 1
+    }
+    eof {
+        puts "Registration completed"
+    }
+}
+
+wait
+
