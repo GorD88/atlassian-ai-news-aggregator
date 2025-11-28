@@ -39,13 +39,18 @@ window.addEventListener('DOMContentLoaded', () => {
 async function callBackend(action, payload = {}) {
   try {
     const invoke = getInvoke();
-    // When using resolver with Custom UI, we call the resolver function directly
+    // When using resolver with Custom UI, we need to pass the functionKey in the payload
     // The resolver function name is 'global-page-handler' (defined in manifest.yml resolver.function)
-    // The payload is passed directly to the resolver handler
-    // The resolver handler will route to the correct function based on functionKey
+    // The resolver handler expects: { call: { functionKey, payload }, context }
+    // But bridge automatically wraps it, so we just pass the functionKey and payload
     const result = await invoke('global-page-handler', {
-      action,
-      ...payload
+      call: {
+        functionKey: 'global-page-handler',
+        payload: {
+          action,
+          ...payload
+        }
+      }
     });
     return result;
   } catch (error) {
