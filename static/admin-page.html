@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>AI News Aggregator Configuration</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f4f5f7;
+    }
+    .container {
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #172b4d;
+      margin-top: 0;
+    }
+    h2 {
+      color: #253858;
+      border-bottom: 2px solid #0052cc;
+      padding-bottom: 8px;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 500;
+      color: #172b4d;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #dfe1e6;
+      border-radius: 3px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    button {
+      background: #0052cc;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    button:hover {
+      background: #0065ff;
+    }
+    button.secondary {
+      background: #6b778c;
+    }
+    button.secondary:hover {
+      background: #5e6c84;
+    }
+    button.danger {
+      background: #de350b;
+    }
+    button.danger:hover {
+      background: #bf2600;
+    }
+    .list-item {
+      background: #f4f5f7;
+      padding: 16px;
+      margin-bottom: 12px;
+      border-radius: 4px;
+      border-left: 4px solid #0052cc;
+    }
+    .list-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .list-item-title {
+      font-weight: 600;
+      color: #172b4d;
+    }
+    .keywords {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .keyword-tag {
+      background: #e3fcef;
+      color: #006644;
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+    .status {
+      padding: 8px 12px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+    }
+    .status.success {
+      background: #e3fcef;
+      color: #006644;
+      border: 1px solid #abf5d1;
+    }
+    .status.error {
+      background: #ffebe6;
+      color: #bf2600;
+      border: 1px solid #ff8f73;
+    }
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .hidden {
+      display: none;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>AI News Aggregator Configuration</h1>
+
+  <div id="status"></div>
+
+  <!-- Feeds Section -->
+  <div class="container">
+    <h2>Feed Sources</h2>
+    <div id="feeds-list"></div>
+    <button onclick="showAddFeedForm()">Add New Feed</button>
+    
+    <div id="feed-form" class="hidden">
+      <h3>Add/Edit Feed</h3>
+      <div class="form-group">
+        <label>Feed Name</label>
+        <input type="text" id="feed-name" placeholder="e.g., Atlassian Blog">
+      </div>
+      <div class="form-group">
+        <label>Feed URL</label>
+        <input type="url" id="feed-url" placeholder="https://example.com/feed">
+      </div>
+      <div class="form-group">
+        <label>Keywords (one per line)</label>
+        <textarea id="feed-keywords" placeholder="Rovo Agent&#10;Rovo Dev CLI&#10;AI"></textarea>
+      </div>
+      <div class="form-group">
+        <label>
+          <input type="checkbox" id="feed-enabled" checked> Enabled
+        </label>
+      </div>
+      <div class="actions">
+        <button onclick="saveFeed()">Save Feed</button>
+        <button class="secondary" onclick="cancelFeedForm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Topic Mappings Section -->
+  <div class="container">
+    <h2>Topic → Confluence Mappings</h2>
+    <div id="mappings-list"></div>
+    <button onclick="showAddMappingForm()">Add New Mapping</button>
+    
+    <div id="mapping-form" class="hidden">
+      <h3>Add/Edit Topic Mapping</h3>
+      <div class="form-group">
+        <label>Topic/Keyword</label>
+        <input type="text" id="mapping-topic" placeholder="e.g., Rovo Agent">
+      </div>
+      <div class="form-group">
+        <label>Confluence Space Key</label>
+        <input type="text" id="mapping-space" placeholder="e.g., AI">
+      </div>
+      <div class="form-group">
+        <label>Parent Page Title (optional)</label>
+        <input type="text" id="mapping-parent" placeholder="e.g., Rovo Agent Updates">
+      </div>
+      <div class="actions">
+        <button onclick="saveMapping()">Save Mapping</button>
+        <button class="secondary" onclick="cancelMappingForm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Section -->
+  <div class="container">
+    <h2>Settings</h2>
+    <div class="form-group">
+      <label>Schedule Interval (minutes)</label>
+      <input type="number" id="schedule-interval" min="60" value="360">
+    </div>
+    <div class="form-group">
+      <label>
+        <input type="checkbox" id="ai-summarization"> Enable AI Summarization
+      </label>
+    </div>
+    <div class="form-group">
+      <label>Deduplication Window (days)</label>
+      <input type="number" id="dedup-window" min="1" value="30">
+    </div>
+    <div class="actions">
+      <button onclick="saveSettings()">Save Settings</button>
+    </div>
+  </div>
+
+  <!-- Actions Section -->
+  <div class="container">
+    <h2>Actions</h2>
+    <div class="actions">
+      <button onclick="processFeedsNow()">Process Feeds Now</button>
+      <button class="secondary" onclick="loadConfiguration()">Reload Configuration</button>
+    </div>
+  </div>
+
+  <script>
+    // Forge bridge is automatically available in admin pages
+    let currentFeedId = null;
+    let currentMappingTopic = null;
+    let config = null;
+
+    // Load configuration on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadConfiguration();
+    });
+
+    async function callBackend(action, payload = {}) {
+      try {
+        // Use Forge's invoke function to call the backend function
+        // The function name matches the key in manifest.yml
+        // Note: In Forge admin pages, 'invoke' is available globally
+        if (typeof invoke === 'function') {
+          const result = await invoke('admin-page', {
+            action,
+            ...payload
+          });
+          return result;
+        } else {
+          // Fallback for development/testing
+          throw new Error('Forge invoke function not available. Make sure you are running in a Forge environment.');
+        }
+      } catch (error) {
+        showStatus('Error: ' + (error.message || String(error)), 'error');
+        throw error;
+      }
+    }
+
+    async function loadConfiguration() {
+      try {
+        const result = await callBackend('getConfig');
+        config = result.config;
+        renderFeeds();
+        renderMappings();
+        renderSettings();
+        showStatus('Configuration loaded', 'success');
+      } catch (error) {
+        showStatus('Failed to load configuration', 'error');
+      }
+    }
+
+    function renderFeeds() {
+      const container = document.getElementById('feeds-list');
+      container.innerHTML = '';
+      
+      config.feeds.forEach(feed => {
+        const div = document.createElement('div');
+        div.className = 'list-item';
+        div.innerHTML = `
+          <div class="list-item-header">
+            <div>
+              <span class="list-item-title">${feed.name}</span>
+              ${feed.enabled ? '<span style="color: green;">✓ Enabled</span>' : '<span style="color: gray;">Disabled</span>'}
+            </div>
+            <div>
+              <button class="secondary" onclick="editFeed('${feed.id}')">Edit</button>
+              <button class="danger" onclick="deleteFeed('${feed.id}')">Delete</button>
+            </div>
+          </div>
+          <div style="color: #6b778c; font-size: 12px; margin-top: 4px;">${feed.url}</div>
+          <div class="keywords">
+            ${feed.keywords.map(k => `<span class="keyword-tag">${k}</span>`).join('')}
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderMappings() {
+      const container = document.getElementById('mappings-list');
+      container.innerHTML = '';
+      
+      config.topicMappings.forEach(mapping => {
+        const div = document.createElement('div');
+        div.className = 'list-item';
+        div.innerHTML = `
+          <div class="list-item-header">
+            <div>
+              <span class="list-item-title">${mapping.topic}</span>
+              <span style="color: #6b778c;">→ Space: ${mapping.spaceKey}</span>
+              ${mapping.parentPageTitle ? `<span style="color: #6b778c;">→ Parent: ${mapping.parentPageTitle}</span>` : ''}
+            </div>
+            <div>
+              <button class="secondary" onclick="editMapping('${mapping.topic}')">Edit</button>
+              <button class="danger" onclick="deleteMapping('${mapping.topic}')">Delete</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderSettings() {
+      document.getElementById('schedule-interval').value = config.scheduleInterval;
+      document.getElementById('ai-summarization').checked = config.enableAISummarization;
+      document.getElementById('dedup-window').value = config.deduplicationWindow;
+    }
+
+    function showAddFeedForm() {
+      currentFeedId = null;
+      document.getElementById('feed-name').value = '';
+      document.getElementById('feed-url').value = '';
+      document.getElementById('feed-keywords').value = '';
+      document.getElementById('feed-enabled').checked = true;
+      document.getElementById('feed-form').classList.remove('hidden');
+    }
+
+    function editFeed(feedId) {
+      const feed = config.feeds.find(f => f.id === feedId);
+      if (!feed) return;
+      
+      currentFeedId = feedId;
+      document.getElementById('feed-name').value = feed.name;
+      document.getElementById('feed-url').value = feed.url;
+      document.getElementById('feed-keywords').value = feed.keywords.join('\n');
+      document.getElementById('feed-enabled').checked = feed.enabled;
+      document.getElementById('feed-form').classList.remove('hidden');
+    }
+
+    function cancelFeedForm() {
+      document.getElementById('feed-form').classList.add('hidden');
+      currentFeedId = null;
+    }
+
+    async function saveFeed() {
+      const name = document.getElementById('feed-name').value.trim();
+      const url = document.getElementById('feed-url').value.trim();
+      const keywordsText = document.getElementById('feed-keywords').value.trim();
+      const enabled = document.getElementById('feed-enabled').checked;
+
+      if (!name || !url) {
+        showStatus('Please fill in all required fields', 'error');
+        return;
+      }
+
+      const keywords = keywordsText.split('\n').map(k => k.trim()).filter(k => k);
+
+      const feed = {
+        id: currentFeedId || `feed-${Date.now()}`,
+        name,
+        url,
+        keywords,
+        enabled,
+      };
+
+      try {
+        await callBackend('upsertFeed', { feed });
+        showStatus('Feed saved successfully', 'success');
+        cancelFeedForm();
+        loadConfiguration();
+      } catch (error) {
+        showStatus('Failed to save feed', 'error');
+      }
+    }
+
+    async function deleteFeed(feedId) {
+      if (!confirm('Are you sure you want to delete this feed?')) return;
+
+      try {
+        await callBackend('removeFeed', { feedId });
+        showStatus('Feed deleted', 'success');
+        loadConfiguration();
+      } catch (error) {
+        showStatus('Failed to delete feed', 'error');
+      }
+    }
+
+    function showAddMappingForm() {
+      currentMappingTopic = null;
+      document.getElementById('mapping-topic').value = '';
+      document.getElementById('mapping-space').value = '';
+      document.getElementById('mapping-parent').value = '';
+      document.getElementById('mapping-form').classList.remove('hidden');
+    }
+
+    function editMapping(topic) {
+      const mapping = config.topicMappings.find(m => m.topic === topic);
+      if (!mapping) return;
+      
+      currentMappingTopic = topic;
+      document.getElementById('mapping-topic').value = mapping.topic;
+      document.getElementById('mapping-space').value = mapping.spaceKey;
+      document.getElementById('mapping-parent').value = mapping.parentPageTitle || '';
+      document.getElementById('mapping-form').classList.remove('hidden');
+    }
+
+    function cancelMappingForm() {
+      document.getElementById('mapping-form').classList.add('hidden');
+      currentMappingTopic = null;
+    }
+
+    async function saveMapping() {
+      const topic = document.getElementById('mapping-topic').value.trim();
+      const spaceKey = document.getElementById('mapping-space').value.trim();
+      const parentPageTitle = document.getElementById('mapping-parent').value.trim();
+
+      if (!topic || !spaceKey) {
+        showStatus('Please fill in topic and space key', 'error');
+        return;
+      }
+
+      const mapping = {
+        topic,
+        spaceKey,
+        ...(parentPageTitle && { parentPageTitle }),
+      };
+
+      try {
+        await callBackend('upsertTopicMapping', { mapping });
+        showStatus('Mapping saved successfully', 'success');
+        cancelMappingForm();
+        loadConfiguration();
+      } catch (error) {
+        showStatus('Failed to save mapping', 'error');
+      }
+    }
+
+    async function deleteMapping(topic) {
+      if (!confirm('Are you sure you want to delete this mapping?')) return;
+
+      try {
+        await callBackend('removeTopicMapping', { topic });
+        showStatus('Mapping deleted', 'success');
+        loadConfiguration();
+      } catch (error) {
+        showStatus('Failed to delete mapping', 'error');
+      }
+    }
+
+    async function saveSettings() {
+      const scheduleInterval = parseInt(document.getElementById('schedule-interval').value);
+      const enableAISummarization = document.getElementById('ai-summarization').checked;
+      const deduplicationWindow = parseInt(document.getElementById('dedup-window').value);
+
+      config.scheduleInterval = scheduleInterval;
+      config.enableAISummarization = enableAISummarization;
+      config.deduplicationWindow = deduplicationWindow;
+
+      try {
+        await callBackend('saveConfig', { config });
+        showStatus('Settings saved successfully', 'success');
+      } catch (error) {
+        showStatus('Failed to save settings', 'error');
+      }
+    }
+
+    async function processFeedsNow() {
+      try {
+        showStatus('Processing feeds...', 'success');
+        const result = await callBackend('processFeeds');
+        if (result.success) {
+          showStatus(
+            `Processing complete: ${result.result.publishedItems} published, ${result.result.skippedItems} skipped`,
+            'success'
+          );
+        } else {
+          showStatus('Processing failed', 'error');
+        }
+      } catch (error) {
+        showStatus('Failed to process feeds', 'error');
+      }
+    }
+
+    function showStatus(message, type) {
+      const statusDiv = document.getElementById('status');
+      statusDiv.className = `status ${type}`;
+      statusDiv.textContent = message;
+      statusDiv.style.display = 'block';
+      
+      if (type === 'success') {
+        setTimeout(() => {
+          statusDiv.style.display = 'none';
+        }, 5000);
+      }
+    }
+  </script>
+</body>
+</html>
+
