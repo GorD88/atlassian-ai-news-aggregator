@@ -35,8 +35,9 @@ export const scheduledTrigger = async (context: any) => {
 /**
  * Global page handler
  * Provides UI for configuration management
+ * This is called via resolver from Custom UI
  */
-export const globalPage = async (req: any) => {
+resolver.define('global-page-handler', async (req: any) => {
   const action = req.payload?.action;
 
   try {
@@ -85,7 +86,9 @@ export const globalPage = async (req: any) => {
       error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
-};
+});
+
+export const globalPage = resolver.getDefinitions();
 
 /**
  * Confluence publisher function (can be called directly if needed)

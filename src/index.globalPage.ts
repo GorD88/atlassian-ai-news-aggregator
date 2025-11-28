@@ -4,5 +4,5 @@
 
 import { globalPage } from './index';
 
-export const run = globalPage;
+export const run = globalPage['global-page-handler'] || globalPage;
 

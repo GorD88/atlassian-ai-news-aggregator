@@ -1,9 +1,12 @@
 // Forge bridge is automatically available via window.__bridge in Custom UI
+// With resolver, we call the resolver function which then calls the backend
 function getInvoke() {
   if (window.__bridge && window.__bridge.callBridge) {
     return (functionName, payload) => {
       return new Promise((resolve, reject) => {
         try {
+          // In Custom UI with resolver, we call the resolver function
+          // The resolver function name is defined in manifest.yml
           window.__bridge.callBridge(functionName, payload, (error, result) => {
             if (error) {
               reject(new Error(error.message || String(error)));
@@ -32,6 +35,8 @@ window.addEventListener('DOMContentLoaded', () => {
 async function callBackend(action, payload = {}) {
   try {
     const invoke = getInvoke();
+    // Call the resolver function which is defined in manifest.yml
+    // The resolver function name is 'global-page-handler'
     const result = await invoke('global-page-handler', {
       action,
       ...payload
