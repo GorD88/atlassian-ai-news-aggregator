@@ -39,17 +39,13 @@ window.addEventListener('DOMContentLoaded', () => {
 async function callBackend(action, payload = {}) {
   try {
     const invoke = getInvoke();
-    // When using resolver, we need to call the resolver function with the functionKey in the payload
-    // The resolver function name is 'global-page-handler' (defined in manifest.yml)
-    // The functionKey 'global-page-handler' is the key defined in resolver.define()
+    // When using resolver with Custom UI, we call the resolver function directly
+    // The resolver function name is 'global-page-handler' (defined in manifest.yml resolver.function)
+    // The payload is passed directly to the resolver handler
+    // The resolver handler will route to the correct function based on functionKey
     const result = await invoke('global-page-handler', {
-      call: {
-        functionKey: 'global-page-handler',
-        payload: {
-          action,
-          ...payload
-        }
-      }
+      action,
+      ...payload
     });
     return result;
   } catch (error) {
