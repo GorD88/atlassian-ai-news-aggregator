@@ -1,0 +1,51 @@
+#!/usr/bin/expect -f
+
+set timeout 180
+set site_url "gord.atlassian.net"
+
+log_file /tmp/forge-install-expect.log
+
+spawn forge install -e production
+
+expect {
+    -re "Select.*product" {
+        puts "Selecting Jira..."
+        send "jira\r"
+        exp_continue
+    }
+    -re "Enter.*site URL" {
+        puts "Entering site URL: $site_url"
+        send "$site_url\r"
+        exp_continue
+    }
+    -re "Do you want to continue.*y/N" {
+        puts "Confirming installation..."
+        send "y\r"
+        exp_continue
+    }
+    -re "Installed" {
+        puts "SUCCESS: App installed!"
+        exp_continue
+    }
+    -re "✔" {
+        puts "Installation successful!"
+        exp_continue
+    }
+    -re "Error" {
+        puts "ERROR detected!"
+        exp_continue
+    }
+    timeout {
+        puts "Timeout occurred"
+        exit 1
+    }
+    eof {
+        puts "Process completed"
+    }
+}
+
+wait
+
+puts "\n=== Installation log ==="
+exec cat /tmp/forge-install-expect.log
+
