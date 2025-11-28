@@ -1,39 +1,34 @@
 # Deployment Instructions
 
-## Крок 1: Реєстрація додатка
+## ✅ Статус
 
-Для реєстрації додатка виконайте в терміналі:
+- ✅ Додаток зареєстровано: **AI News Aggregator**
+- ✅ App ID: `ari:cloud:ecosystem::app/2db096a8-4660-4886-800c-eb89dc97d5bf`
+- ✅ Задеплоєно в production
 
-```bash
-cd "/Users/igorhutsalyuk/Desktop/AI Hub"
-forge register
-```
+## Крок 1: Реєстрація додатка (ВЖЕ ВИКОНАНО)
 
-Коли система запитає назву додатка, введіть:
-```
-AI News Aggregator
-```
+Додаток вже зареєстровано автоматично через скрипт.
 
-Після реєстрації `app.id` в `manifest.yml` буде автоматично оновлено.
+## Крок 2: Збірка додатка (ВЖЕ ВИКОНАНО)
 
-## Крок 2: Збірка додатка
+Додаток вже зібрано та задеплоєно.
 
-```bash
-forge build
-```
+## Крок 3: Деплой в продакшн (ВЖЕ ВИКОНАНО)
 
-Якщо є помилки лінтера, використайте:
-```bash
-forge build --no-verify
-```
-
-## Крок 3: Деплой в продакшн
-
-```bash
-forge deploy -e production
-```
+Додаток вже задеплоєно в production середовище.
 
 ## Крок 4: Встановлення на Jira сайт
+
+### Автоматичне встановлення (через скрипт):
+
+```bash
+./scripts/install-forge-app.expect yourcompany.atlassian.net
+```
+
+Замініть `yourcompany.atlassian.net` на URL вашого Jira сайту.
+
+### Або вручну:
 
 ```bash
 forge install -e production

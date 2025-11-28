@@ -1,0 +1,37 @@
+#!/usr/bin/expect -f
+
+set timeout 120
+
+# Get site URL from command line argument or use default
+if {[llength $argv] > 0} {
+    set site_url [lindex $argv 0]
+} else {
+    set site_url "yourcompany.atlassian.net"
+}
+
+spawn forge install -e production
+
+expect {
+    "Select a product" {
+        send "jira\r"
+        exp_continue
+    }
+    "Enter the site URL" {
+        send "$site_url\r"
+        exp_continue
+    }
+    "Install" {
+        send "y\r"
+        exp_continue
+    }
+    timeout {
+        puts "Timeout waiting for prompt"
+        exit 1
+    }
+    eof {
+        puts "Installation completed"
+    }
+}
+
+wait
+
