@@ -23,11 +23,11 @@ import { AppConfig, FeedConfig, TopicMapping } from './types/config';
 const resolver = new Resolver();
 
 // Define the handler function
-// When using resolver, the functionKey in resolver.define() should match
-// what we call from Custom UI, but the actual handler receives the payload directly
+// The functionKey 'global-page-handler' matches the function key in manifest.yml
 resolver.define('global-page-handler', async (req: any) => {
-  // For resolver, req.payload contains the actual payload sent from Custom UI
-  // (not wrapped in call.functionKey structure)
+  logger.info('Global page handler called', { payload: req.payload });
+  
+  // When using resolver, req.payload contains the actual payload sent from Custom UI
   const action = req.payload?.action;
 
   try {
@@ -68,6 +68,7 @@ resolver.define('global-page-handler', async (req: any) => {
         return { success: true, result };
 
       default:
+        logger.warn('Unknown action', { action });
         return { error: 'Unknown action' };
     }
   } catch (error) {
@@ -80,5 +81,6 @@ resolver.define('global-page-handler', async (req: any) => {
 
 // Export the resolver definitions handler
 // This is the handler that Forge runtime will call when resolver is used
+// The handler receives calls from Custom UI bridge and routes them to the correct function
 export const run = resolver.getDefinitions();
 
