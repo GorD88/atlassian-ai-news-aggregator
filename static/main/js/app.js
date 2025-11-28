@@ -2,7 +2,19 @@
 function getInvoke() {
   if (window.__bridge && window.__bridge.callBridge) {
     return (functionName, payload) => {
-      return window.__bridge.callBridge(functionName, payload);
+      return new Promise((resolve, reject) => {
+        try {
+          window.__bridge.callBridge(functionName, payload, (error, result) => {
+            if (error) {
+              reject(new Error(error.message || String(error)));
+            } else {
+              resolve(result);
+            }
+          });
+        } catch (err) {
+          reject(err);
+        }
+      });
     };
   }
   throw new Error('Forge bridge not available. Make sure you are running in a Forge environment.');
