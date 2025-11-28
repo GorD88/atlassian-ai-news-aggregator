@@ -4,9 +4,6 @@
  * For Custom UI with resolver, we need to export the handler function
  * that processes all resolver calls. The resolver function name in manifest.yml
  * points to this handler.
- * 
- * IMPORTANT: The resolver must be defined in the same file where getDefinitions() is called
- * to ensure all definitions are registered before the handler is created.
  */
 
 import Resolver from '@forge/resolver';
@@ -22,10 +19,10 @@ import {
 import { logger } from './utils/logger';
 import { AppConfig, FeedConfig, TopicMapping } from './types/config';
 
-// Create resolver instance in this file
+// Create resolver instance
 const resolver = new Resolver();
 
-// Define the handler function
+// Define the handler function with the same key as in manifest.yml
 resolver.define('global-page-handler', async (req: any) => {
   const action = req.payload?.action;
 
@@ -78,8 +75,6 @@ resolver.define('global-page-handler', async (req: any) => {
 });
 
 // Export the resolver definitions handler
-// This handler receives calls from Custom UI bridge and routes them to the correct function
-// For resolver, we export both 'run' (for Forge runtime) and 'handler' (for resolver)
+// This is the handler that Forge runtime will call
 export const run = resolver.getDefinitions();
-export const handler = resolver.getDefinitions();
 
