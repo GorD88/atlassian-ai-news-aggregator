@@ -3,7 +3,7 @@
  * Handles creating and updating pages in Confluence
  */
 
-import api from '@forge/api';
+import api, { route } from '@forge/api';
 import { NewsItem, TopicMapping } from '../types/config';
 import { logger } from '../utils/logger';
 import { ConfluencePage, CreatePageRequest } from '../types/confluence';
@@ -24,7 +24,7 @@ async function findParentPage(
     const response = await api
       .asApp()
       .requestConfluence(
-        `/wiki/rest/api/content?spaceKey=${spaceKey}&title=${encodeURIComponent(parentPageTitle)}&expand=version`
+        route`/wiki/rest/api/content?spaceKey=${spaceKey}&title=${encodeURIComponent(parentPageTitle)}&expand=version`
       );
 
     const data = await response.json();
@@ -124,7 +124,7 @@ export async function publishNewsItem(
 
     const response = await api
       .asApp()
-      .requestConfluence(`/wiki/rest/api/content`, {
+      .requestConfluence(route`/wiki/rest/api/content`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -166,7 +166,7 @@ export async function pageExists(
     const response = await api
       .asApp()
       .requestConfluence(
-        `/wiki/rest/api/content?spaceKey=${spaceKey}&title=${encodeURIComponent(title)}`
+        route`/wiki/rest/api/content?spaceKey=${spaceKey}&title=${encodeURIComponent(title)}`
       );
 
     const data = await response.json();

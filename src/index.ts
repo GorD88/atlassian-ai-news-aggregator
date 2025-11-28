@@ -36,7 +36,7 @@ export const scheduledTrigger = async (context: any) => {
  * Global page handler
  * Provides UI for configuration management
  */
-export const globalPage = resolver.defineFunction(async (req: any) => {
+export const globalPage = async (req: any) => {
   const action = req.payload?.action;
 
   try {
@@ -85,14 +85,14 @@ export const globalPage = resolver.defineFunction(async (req: any) => {
       error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
-});
+};
 
 /**
  * Confluence publisher function (can be called directly if needed)
  */
-export const confluencePublisher = resolver.defineFunction(async (req: any) => {
+export const confluencePublisher = async (req: any) => {
   logger.info('Confluence publisher called');
   // This can be used for direct publishing if needed
   return { message: 'Use processAllFeeds() for full processing' };
-});
+};
 
