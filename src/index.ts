@@ -36,7 +36,7 @@ export const scheduledTrigger = async (context: any) => {
  * Global page handler
  * Provides UI for configuration management
  */
-export const globalPage = resolver.defineFunction(async (req) => {
+export const globalPage = resolver.defineFunction(async (req: any) => {
   const action = req.payload?.action;
 
   try {
@@ -90,7 +90,7 @@ export const globalPage = resolver.defineFunction(async (req) => {
 /**
  * Confluence publisher function (can be called directly if needed)
  */
-export const confluencePublisher = resolver.defineFunction(async (req) => {
+export const confluencePublisher = resolver.defineFunction(async (req: any) => {
   logger.info('Confluence publisher called');
   // This can be used for direct publishing if needed
   return { message: 'Use processAllFeeds() for full processing' };

@@ -8,7 +8,6 @@ import { NewsItem, TopicMapping } from '../types/config';
 import { logger } from '../utils/logger';
 import { ConfluencePage, CreatePageRequest } from '../types/confluence';
 
-const CONFLUENCE_API_BASE = '/wiki/rest/api';
 
 /**
  * Find a parent page by title in a space
@@ -25,7 +24,7 @@ async function findParentPage(
     const response = await api
       .asApp()
       .requestConfluence(
-        `${CONFLUENCE_API_BASE}/content?spaceKey=${spaceKey}&title=${encodeURIComponent(parentPageTitle)}&expand=version`
+        `/wiki/rest/api/content?spaceKey=${spaceKey}&title=${encodeURIComponent(parentPageTitle)}&expand=version`
       );
 
     const data = await response.json();
@@ -125,7 +124,7 @@ export async function publishNewsItem(
 
     const response = await api
       .asApp()
-      .requestConfluence(`${CONFLUENCE_API_BASE}/content`, {
+      .requestConfluence(`/wiki/rest/api/content`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -167,7 +166,7 @@ export async function pageExists(
     const response = await api
       .asApp()
       .requestConfluence(
-        `${CONFLUENCE_API_BASE}/content?spaceKey=${spaceKey}&title=${encodeURIComponent(title)}`
+        `/wiki/rest/api/content?spaceKey=${spaceKey}&title=${encodeURIComponent(title)}`
       );
 
     const data = await response.json();

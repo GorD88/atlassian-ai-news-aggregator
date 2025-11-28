@@ -1,24 +1,20 @@
 modules:
   jira:globalPage:
     - key: ai-news-global
-      function: global-page
+      function: global-page-handler
       title: AI News Aggregator
-      resource: global-page
   function:
-    - key: global-page
-      handler: src/index.globalPage
+    - key: global-page-handler
+      handler: index.globalPage
     - key: scheduled-trigger
-      handler: src/index.scheduledTrigger
+      handler: index.scheduledTrigger
     - key: confluence-publisher
-      handler: src/index.confluencePublisher
+      handler: index.confluencePublisher
   trigger:
     - key: feed-parser-schedule
       function: scheduled-trigger
-      schedule: cron(0 */6 * * ? *)  # Every 6 hours
-      # Can be configured via global page UI
-  resources:
-    - key: global-page
-      path: static/global-page.html
+      events:
+        - scheduled:feed-parser-schedule
 
 permissions:
   external:
@@ -31,14 +27,10 @@ permissions:
         - 'https://*.rss'
         - 'https://*.atom'
         - 'https://*.feed'
-  storage:
-    app: read-write
-  confluence:
-    content:
-      - read
-      - write
-  jira:
-    - read
+  scopes:
+    - read:confluence-content.all
+    - write:confluence-content.all
+    - read:jira-work
 
 app:
   id: ari:cloud:ecosystem::app/your-app-id

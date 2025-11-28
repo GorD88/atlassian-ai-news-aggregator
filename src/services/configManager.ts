@@ -2,7 +2,7 @@
  * Configuration manager using Forge storage
  */
 
-import storage from '@forge/api';
+import { storage } from '@forge/api';
 import { AppConfig, FeedConfig, TopicMapping, ProcessedItem } from '../types/config';
 import { logger } from '../utils/logger';
 
