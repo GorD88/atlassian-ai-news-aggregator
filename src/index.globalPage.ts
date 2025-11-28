@@ -22,8 +22,12 @@ import { AppConfig, FeedConfig, TopicMapping } from './types/config';
 // Create resolver instance
 const resolver = new Resolver();
 
-// Define the handler function with the same key as in manifest.yml
+// Define the handler function
+// When using resolver, the functionKey in resolver.define() should match
+// what we call from Custom UI, but the actual handler receives the payload directly
 resolver.define('global-page-handler', async (req: any) => {
+  // For resolver, req.payload contains the actual payload sent from Custom UI
+  // (not wrapped in call.functionKey structure)
   const action = req.payload?.action;
 
   try {
@@ -75,6 +79,6 @@ resolver.define('global-page-handler', async (req: any) => {
 });
 
 // Export the resolver definitions handler
-// This is the handler that Forge runtime will call
+// This is the handler that Forge runtime will call when resolver is used
 export const run = resolver.getDefinitions();
 
