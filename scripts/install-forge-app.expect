@@ -20,7 +20,23 @@ expect {
         send "$site_url\r"
         exp_continue
     }
-    "Install" {
+    "Enter the site URL*" {
+        send "$site_url\r"
+        exp_continue
+    }
+    "Install*" {
+        send "y\r"
+        exp_continue
+    }
+    "install*" {
+        send "y\r"
+        exp_continue
+    }
+    "y/N" {
+        send "y\r"
+        exp_continue
+    }
+    "Y/n" {
         send "y\r"
         exp_continue
     }
