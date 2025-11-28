@@ -2,16 +2,26 @@
 
 set timeout 120
 
-# Get site URL from command line argument or use default
+# Get environment and site URL from command line arguments
 if {[llength $argv] > 0} {
-    set site_url [lindex $argv 0]
+    set environment [lindex $argv 0]
 } else {
-    set site_url "yourcompany.atlassian.net"
+    set environment "production"
 }
 
-spawn forge install -e production
+if {[llength $argv] > 1} {
+    set site_url [lindex $argv 1]
+} else {
+    set site_url "gord.atlassian.net"
+}
+
+spawn forge install -e $environment
 
 expect {
+    "Select an Atlassian app or platform tool" {
+        send "jira\r"
+        exp_continue
+    }
     "Select a product" {
         send "jira\r"
         exp_continue
@@ -22,6 +32,14 @@ expect {
     }
     "Enter the site URL*" {
         send "$site_url\r"
+        exp_continue
+    }
+    "Enter your site" {
+        send "$site_url\r"
+        exp_continue
+    }
+    "Do you want to continue?" {
+        send "y\r"
         exp_continue
     }
     "Install*" {
@@ -38,6 +56,18 @@ expect {
     }
     "Y/n" {
         send "y\r"
+        exp_continue
+    }
+    "y/n" {
+        send "y\r"
+        exp_continue
+    }
+    "Installed" {
+        puts "Installation completed successfully"
+        exp_continue
+    }
+    "installed" {
+        puts "Installation completed successfully"
         exp_continue
     }
     timeout {
