@@ -79,5 +79,7 @@ resolver.define('global-page-handler', async (req: any) => {
 
 // Export the resolver definitions handler
 // This handler receives calls from Custom UI bridge and routes them to the correct function
+// For resolver, we export both 'run' (for Forge runtime) and 'handler' (for resolver)
 export const run = resolver.getDefinitions();
+export const handler = resolver.getDefinitions();
 
