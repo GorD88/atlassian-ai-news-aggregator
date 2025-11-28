@@ -88,7 +88,8 @@ resolver.define('global-page-handler', async (req: any) => {
   }
 });
 
-export const globalPage = resolver.getDefinitions();
+// Export resolver definitions for use in entry point
+export const globalPageResolver = resolver.getDefinitions();
 
 /**
  * Confluence publisher function (can be called directly if needed)

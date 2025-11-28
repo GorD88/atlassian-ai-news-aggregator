@@ -2,7 +2,8 @@
  * Global page entry point
  */
 
-import { globalPage } from './index';
+import { globalPageResolver } from './index';
 
-export const run = globalPage['global-page-handler'] || globalPage;
+// Export the resolver handler function
+export const run = globalPageResolver['global-page-handler'];
 
