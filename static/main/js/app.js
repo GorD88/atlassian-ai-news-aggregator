@@ -1,6 +1,25 @@
 // Forge bridge is automatically available via window.__bridge in Custom UI
 // With resolver, we use invoke to call the resolver function
 // The resolver function name is defined in manifest.yml as 'global-page-handler'
+
+// Wait for bridge to be ready
+function waitForBridge(maxAttempts = 50, delay = 100) {
+  return new Promise((resolve, reject) => {
+    let attempts = 0;
+    const checkBridge = () => {
+      if (window.__bridge && (window.__bridge.invoke || window.__bridge.callBridge)) {
+        resolve();
+      } else if (attempts < maxAttempts) {
+        attempts++;
+        setTimeout(checkBridge, delay);
+      } else {
+        reject(new Error('Forge bridge not available after waiting. Make sure you are running in a Forge environment.'));
+      }
+    };
+    checkBridge();
+  });
+}
+
 function getInvoke() {
   // Check if bridge is available
   if (window.__bridge && window.__bridge.invoke) {
@@ -31,29 +50,33 @@ let currentFeedId = null;
 let currentMappingTopic = null;
 let config = null;
 
-// Load configuration on page load
-window.addEventListener('DOMContentLoaded', () => {
-  loadConfiguration();
+// Load configuration on page load, after bridge is ready
+window.addEventListener('DOMContentLoaded', async () => {
+  try {
+    await waitForBridge();
+    loadConfiguration();
+  } catch (error) {
+    console.error('Failed to initialize bridge:', error);
+    showStatus('Error: Failed to initialize Forge bridge. Please refresh the page.', 'error');
+  }
 });
 
 async function callBackend(action, payload = {}) {
   try {
+    // Ensure bridge is ready before calling
+    await waitForBridge();
     const invoke = getInvoke();
-    // When using resolver with Custom UI, we need to pass the functionKey in the payload
+    
+    // When using resolver with Custom UI, bridge automatically handles the routing
+    // We just pass the payload directly - bridge will wrap it with functionKey
     // The resolver function name is 'global-page-handler' (defined in manifest.yml resolver.function)
-    // The resolver handler expects: { call: { functionKey, payload }, context }
-    // But bridge automatically wraps it, so we just pass the functionKey and payload
     const result = await invoke('global-page-handler', {
-      call: {
-        functionKey: 'global-page-handler',
-        payload: {
-          action,
-          ...payload
-        }
-      }
+      action,
+      ...payload
     });
     return result;
   } catch (error) {
+    console.error('Error calling backend:', error);
     showStatus('Error: ' + (error.message || String(error)), 'error');
     throw error;
   }
