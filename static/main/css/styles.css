@@ -1,0 +1,147 @@
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #f4f5f7;
+}
+.container {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+h1 {
+  color: #172b4d;
+  margin-top: 0;
+}
+h2 {
+  color: #253858;
+  border-bottom: 2px solid #0052cc;
+  padding-bottom: 8px;
+}
+.form-group {
+  margin-bottom: 16px;
+}
+label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+  color: #172b4d;
+}
+input, textarea, select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #dfe1e6;
+  border-radius: 3px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+button {
+  background: #0052cc;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+button:hover {
+  background: #0065ff;
+}
+button.secondary {
+  background: #6b778c;
+}
+button.secondary:hover {
+  background: #5e6c84;
+}
+button.danger {
+  background: #de350b;
+}
+button.danger:hover {
+  background: #bf2600;
+}
+.list-item {
+  background: #f4f5f7;
+  padding: 16px;
+  margin-bottom: 12px;
+  border-radius: 4px;
+  border-left: 4px solid #0052cc;
+}
+.list-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.list-item-title {
+  font-weight: 600;
+  color: #172b4d;
+}
+.keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.keyword-tag {
+  background: #e3fcef;
+  color: #006644;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+.status {
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+.status.success {
+  background: #e3fcef;
+  color: #006644;
+  border: 1px solid #abf5d1;
+}
+.status.error {
+  background: #ffebe6;
+  color: #bf2600;
+  border: 1px solid #ff8f73;
+}
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+.hidden {
+  display: none;
+}
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.feed-url {
+  color: #6b778c;
+  font-size: 12px;
+  margin-top: 4px;
+}
+.mapping-info {
+  color: #6b778c;
+}
+.enabled-badge {
+  color: #006644;
+}
+.disabled-badge {
+  color: #6b778c;
+}
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+

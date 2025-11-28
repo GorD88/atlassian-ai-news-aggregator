@@ -36,6 +36,9 @@ permissions:
     - read:confluence-content.all
     - read:jira-work
     - storage:app
+  content:
+    styles:
+      - unsafe-inline
 
 resources:
   - key: application

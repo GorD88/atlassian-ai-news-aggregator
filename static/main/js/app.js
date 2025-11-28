@@ -1,0 +1,322 @@
+// Forge bridge is automatically available via window.__bridge in Custom UI
+function getInvoke() {
+  if (window.__bridge && window.__bridge.callBridge) {
+    return (functionName, payload) => {
+      return window.__bridge.callBridge(functionName, payload);
+    };
+  }
+  throw new Error('Forge bridge not available. Make sure you are running in a Forge environment.');
+}
+
+let currentFeedId = null;
+let currentMappingTopic = null;
+let config = null;
+
+// Load configuration on page load
+window.addEventListener('DOMContentLoaded', () => {
+  loadConfiguration();
+});
+
+async function callBackend(action, payload = {}) {
+  try {
+    const invoke = getInvoke();
+    const result = await invoke('global-page-handler', {
+      action,
+      ...payload
+    });
+    return result;
+  } catch (error) {
+    showStatus('Error: ' + (error.message || String(error)), 'error');
+    throw error;
+  }
+}
+
+async function loadConfiguration() {
+  try {
+    const result = await callBackend('getConfig');
+    config = result.config;
+    renderFeeds();
+    renderMappings();
+    renderSettings();
+    showStatus('Configuration loaded', 'success');
+  } catch (error) {
+    showStatus('Failed to load configuration', 'error');
+  }
+}
+
+function renderFeeds() {
+  const container = document.getElementById('feeds-list');
+  container.innerHTML = '';
+  
+  config.feeds.forEach(feed => {
+    const div = document.createElement('div');
+    div.className = 'list-item';
+    
+    const enabledBadge = feed.enabled 
+      ? '<span class="enabled-badge">✓ Enabled</span>' 
+      : '<span class="disabled-badge">Disabled</span>';
+    
+    const keywordTags = feed.keywords.map(k => 
+      `<span class="keyword-tag">${escapeHtml(k)}</span>`
+    ).join('');
+    
+    div.innerHTML = `
+      <div class="list-item-header">
+        <div>
+          <span class="list-item-title">${escapeHtml(feed.name)}</span>
+          ${enabledBadge}
+        </div>
+        <div>
+          <button class="secondary" data-feed-id="${escapeHtml(feed.id)}" data-action="edit-feed">Edit</button>
+          <button class="danger" data-feed-id="${escapeHtml(feed.id)}" data-action="delete-feed">Delete</button>
+        </div>
+      </div>
+      <div class="feed-url">${escapeHtml(feed.url)}</div>
+      <div class="keywords">
+        ${keywordTags}
+      </div>
+    `;
+    
+    // Add event listeners
+    div.querySelector('[data-action="edit-feed"]').addEventListener('click', () => editFeed(feed.id));
+    div.querySelector('[data-action="delete-feed"]').addEventListener('click', () => deleteFeed(feed.id));
+    
+    container.appendChild(div);
+  });
+}
+
+function renderMappings() {
+  const container = document.getElementById('mappings-list');
+  container.innerHTML = '';
+  
+  config.topicMappings.forEach(mapping => {
+    const div = document.createElement('div');
+    div.className = 'list-item';
+    
+    const parentInfo = mapping.parentPageTitle 
+      ? `<span class="mapping-info">→ Parent: ${escapeHtml(mapping.parentPageTitle)}</span>` 
+      : '';
+    
+    div.innerHTML = `
+      <div class="list-item-header">
+        <div>
+          <span class="list-item-title">${escapeHtml(mapping.topic)}</span>
+          <span class="mapping-info">→ Space: ${escapeHtml(mapping.spaceKey)}</span>
+          ${parentInfo}
+        </div>
+        <div>
+          <button class="secondary" data-topic="${escapeHtml(mapping.topic)}" data-action="edit-mapping">Edit</button>
+          <button class="danger" data-topic="${escapeHtml(mapping.topic)}" data-action="delete-mapping">Delete</button>
+        </div>
+      </div>
+    `;
+    
+    // Add event listeners
+    div.querySelector('[data-action="edit-mapping"]').addEventListener('click', () => editMapping(mapping.topic));
+    div.querySelector('[data-action="delete-mapping"]').addEventListener('click', () => deleteMapping(mapping.topic));
+    
+    container.appendChild(div);
+  });
+}
+
+function renderSettings() {
+  document.getElementById('schedule-interval').value = config.scheduleInterval;
+  document.getElementById('ai-summarization').checked = config.enableAISummarization;
+  document.getElementById('dedup-window').value = config.deduplicationWindow;
+}
+
+function showAddFeedForm() {
+  currentFeedId = null;
+  document.getElementById('feed-name').value = '';
+  document.getElementById('feed-url').value = '';
+  document.getElementById('feed-keywords').value = '';
+  document.getElementById('feed-enabled').checked = true;
+  document.getElementById('feed-form').classList.remove('hidden');
+}
+
+function editFeed(feedId) {
+  const feed = config.feeds.find(f => f.id === feedId);
+  if (!feed) return;
+  
+  currentFeedId = feedId;
+  document.getElementById('feed-name').value = feed.name;
+  document.getElementById('feed-url').value = feed.url;
+  document.getElementById('feed-keywords').value = feed.keywords.join('\n');
+  document.getElementById('feed-enabled').checked = feed.enabled;
+  document.getElementById('feed-form').classList.remove('hidden');
+}
+
+function cancelFeedForm() {
+  document.getElementById('feed-form').classList.add('hidden');
+  currentFeedId = null;
+}
+
+async function saveFeed() {
+  const name = document.getElementById('feed-name').value.trim();
+  const url = document.getElementById('feed-url').value.trim();
+  const keywordsText = document.getElementById('feed-keywords').value.trim();
+  const enabled = document.getElementById('feed-enabled').checked;
+
+  if (!name || !url) {
+    showStatus('Please fill in all required fields', 'error');
+    return;
+  }
+
+  const keywords = keywordsText.split('\n').map(k => k.trim()).filter(k => k);
+
+  const feed = {
+    id: currentFeedId || `feed-${Date.now()}`,
+    name,
+    url,
+    keywords,
+    enabled,
+  };
+
+  try {
+    await callBackend('upsertFeed', { feed });
+    showStatus('Feed saved successfully', 'success');
+    cancelFeedForm();
+    loadConfiguration();
+  } catch (error) {
+    showStatus('Failed to save feed', 'error');
+  }
+}
+
+async function deleteFeed(feedId) {
+  if (!confirm('Are you sure you want to delete this feed?')) return;
+
+  try {
+    await callBackend('removeFeed', { feedId });
+    showStatus('Feed deleted', 'success');
+    loadConfiguration();
+  } catch (error) {
+    showStatus('Failed to delete feed', 'error');
+  }
+}
+
+function showAddMappingForm() {
+  currentMappingTopic = null;
+  document.getElementById('mapping-topic').value = '';
+  document.getElementById('mapping-space').value = '';
+  document.getElementById('mapping-parent').value = '';
+  document.getElementById('mapping-form').classList.remove('hidden');
+}
+
+function editMapping(topic) {
+  const mapping = config.topicMappings.find(m => m.topic === topic);
+  if (!mapping) return;
+  
+  currentMappingTopic = topic;
+  document.getElementById('mapping-topic').value = mapping.topic;
+  document.getElementById('mapping-space').value = mapping.spaceKey;
+  document.getElementById('mapping-parent').value = mapping.parentPageTitle || '';
+  document.getElementById('mapping-form').classList.remove('hidden');
+}
+
+function cancelMappingForm() {
+  document.getElementById('mapping-form').classList.add('hidden');
+  currentMappingTopic = null;
+}
+
+async function saveMapping() {
+  const topic = document.getElementById('mapping-topic').value.trim();
+  const spaceKey = document.getElementById('mapping-space').value.trim();
+  const parentPageTitle = document.getElementById('mapping-parent').value.trim();
+
+  if (!topic || !spaceKey) {
+    showStatus('Please fill in topic and space key', 'error');
+    return;
+  }
+
+  const mapping = {
+    topic,
+    spaceKey,
+    ...(parentPageTitle && { parentPageTitle }),
+  };
+
+  try {
+    await callBackend('upsertTopicMapping', { mapping });
+    showStatus('Mapping saved successfully', 'success');
+    cancelMappingForm();
+    loadConfiguration();
+  } catch (error) {
+    showStatus('Failed to save mapping', 'error');
+  }
+}
+
+async function deleteMapping(topic) {
+  if (!confirm('Are you sure you want to delete this mapping?')) return;
+
+  try {
+    await callBackend('removeTopicMapping', { topic });
+    showStatus('Mapping deleted', 'success');
+    loadConfiguration();
+  } catch (error) {
+    showStatus('Failed to delete mapping', 'error');
+  }
+}
+
+async function saveSettings() {
+  const scheduleInterval = parseInt(document.getElementById('schedule-interval').value);
+  const enableAISummarization = document.getElementById('ai-summarization').checked;
+  const deduplicationWindow = parseInt(document.getElementById('dedup-window').value);
+
+  config.scheduleInterval = scheduleInterval;
+  config.enableAISummarization = enableAISummarization;
+  config.deduplicationWindow = deduplicationWindow;
+
+  try {
+    await callBackend('saveConfig', { config });
+    showStatus('Settings saved successfully', 'success');
+  } catch (error) {
+    showStatus('Failed to save settings', 'error');
+  }
+}
+
+async function processFeedsNow() {
+  try {
+    showStatus('Processing feeds...', 'success');
+    const result = await callBackend('processFeeds');
+    if (result.success) {
+      showStatus(
+        `Processing complete: ${result.result.publishedItems} published, ${result.result.skippedItems} skipped`,
+        'success'
+      );
+    } else {
+      showStatus('Processing failed', 'error');
+    }
+  } catch (error) {
+    showStatus('Failed to process feeds', 'error');
+  }
+}
+
+function showStatus(message, type) {
+  const statusDiv = document.getElementById('status');
+  statusDiv.className = `status ${type}`;
+  statusDiv.textContent = message;
+  statusDiv.style.display = 'block';
+  
+  if (type === 'success') {
+    setTimeout(() => {
+      statusDiv.style.display = 'none';
+    }, 5000);
+  }
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Make functions globally available
+window.showAddFeedForm = showAddFeedForm;
+window.saveFeed = saveFeed;
+window.cancelFeedForm = cancelFeedForm;
+window.showAddMappingForm = showAddMappingForm;
+window.saveMapping = saveMapping;
+window.cancelMappingForm = cancelMappingForm;
+window.saveSettings = saveSettings;
+window.processFeedsNow = processFeedsNow;
+window.loadConfiguration = loadConfiguration;
+
