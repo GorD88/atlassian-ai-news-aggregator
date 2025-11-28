@@ -82,5 +82,27 @@ resolver.define('global-page-handler', async (req: any) => {
 // Export the resolver definitions handler
 // This is the handler that Forge runtime will call when resolver is used
 // The handler receives calls from Custom UI bridge and routes them to the correct function
-export const run = resolver.getDefinitions();
+const handler = resolver.getDefinitions();
+
+export const run = async (payload: any, context: any) => {
+  logger.info('=== RESOLVER HANDLER CALLED ===', {
+    payload,
+    context: context ? Object.keys(context) : 'no context',
+    payloadType: typeof payload,
+    hasCall: payload?.call ? 'yes' : 'no',
+    functionKey: payload?.call?.functionKey,
+  });
+  
+  try {
+    const result = await handler(payload, context);
+    logger.info('=== RESOLVER HANDLER RESULT ===', {
+      resultType: typeof result,
+      hasError: result?.error ? 'yes' : 'no',
+    });
+    return result;
+  } catch (error) {
+    logger.error('=== RESOLVER HANDLER ERROR ===', error);
+    throw error;
+  }
+};
 

@@ -7,12 +7,23 @@ function waitForBridge(maxAttempts = 50, delay = 100) {
   return new Promise((resolve, reject) => {
     let attempts = 0;
     const checkBridge = () => {
+      console.log(`Checking bridge (attempt ${attempts + 1}/${maxAttempts})...`, {
+        hasBridge: !!window.__bridge,
+        hasInvoke: !!(window.__bridge && window.__bridge.invoke),
+        hasCallBridge: !!(window.__bridge && window.__bridge.callBridge),
+      });
+      
       if (window.__bridge && (window.__bridge.invoke || window.__bridge.callBridge)) {
+        console.log('Bridge is ready!', {
+          hasInvoke: !!window.__bridge.invoke,
+          hasCallBridge: !!window.__bridge.callBridge,
+        });
         resolve();
       } else if (attempts < maxAttempts) {
         attempts++;
         setTimeout(checkBridge, delay);
       } else {
+        console.error('Bridge not available after all attempts');
         reject(new Error('Forge bridge not available after waiting. Make sure you are running in a Forge environment.'));
       }
     };
@@ -63,20 +74,38 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 async function callBackend(action, payload = {}) {
   try {
+    console.log('=== CALLING BACKEND ===', { action, payload });
+    
     // Ensure bridge is ready before calling
     await waitForBridge();
+    console.log('Bridge is ready, getting invoke function');
+    
     const invoke = getInvoke();
+    console.log('Invoke function obtained:', typeof invoke);
+    
+    const callPayload = {
+      action,
+      ...payload
+    };
+    console.log('Calling invoke with:', {
+      functionName: 'global-page-handler',
+      payload: callPayload
+    });
     
     // When using resolver with Custom UI, bridge automatically handles the routing
     // We just pass the payload directly - bridge will wrap it with functionKey
     // The resolver function name is 'global-page-handler' (defined in manifest.yml resolver.function)
-    const result = await invoke('global-page-handler', {
-      action,
-      ...payload
-    });
+    const result = await invoke('global-page-handler', callPayload);
+    
+    console.log('=== BACKEND RESULT ===', result);
     return result;
   } catch (error) {
-    console.error('Error calling backend:', error);
+    console.error('=== BACKEND ERROR ===', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     showStatus('Error: ' + (error.message || String(error)), 'error');
     throw error;
   }
