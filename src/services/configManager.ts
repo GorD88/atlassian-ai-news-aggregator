@@ -89,16 +89,27 @@ export async function saveConfig(config: AppConfig): Promise<void> {
  * Add or update a feed configuration
  */
 export async function upsertFeed(feed: FeedConfig): Promise<void> {
+  logger.info('upsertFeed called', { feedId: feed.id, feedName: feed.name });
+  
+  if (!feed || !feed.id) {
+    throw new Error('Feed must have an id');
+  }
+  
   const config = await loadConfig();
+  logger.info('Config loaded', { feedsCount: config.feeds.length });
+  
   const existingIndex = config.feeds.findIndex((f) => f.id === feed.id);
 
   if (existingIndex >= 0) {
+    logger.info('Updating existing feed', { index: existingIndex, feedId: feed.id });
     config.feeds[existingIndex] = feed;
   } else {
+    logger.info('Adding new feed', { feedId: feed.id });
     config.feeds.push(feed);
   }
 
   await saveConfig(config);
+  logger.info('Feed saved successfully', { feedId: feed.id, totalFeeds: config.feeds.length });
 }
 
 /**

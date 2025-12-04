@@ -68,7 +68,14 @@ window.addEventListener('DOMContentLoaded', async () => {
     loadConfiguration();
   } catch (error) {
     console.error('Failed to initialize bridge:', error);
-    showStatus('Error: Failed to initialize Forge bridge. Please refresh the page.', 'error');
+    
+    // Check if it's a tunnel connection error
+    const errorMessage = error.message || String(error);
+    if (errorMessage.includes('blocked') || errorMessage.includes('private network') || errorMessage.includes('connection')) {
+      showStatus('⚠️ Tunnel connection blocked. Please reload the page (F5 or Cmd+R) to allow the connection to your local tunnel.', 'error');
+    } else {
+      showStatus('Error: Failed to initialize Forge bridge. Please refresh the page.', 'error');
+    }
   }
 });
 
@@ -253,12 +260,21 @@ async function saveFeed() {
   };
 
   try {
-    await callBackend('upsertFeed', { feed });
+    console.log('Saving feed:', feed);
+    const result = await callBackend('upsertFeed', { feed });
+    console.log('Save feed result:', result);
+    
+    if (result.error) {
+      showStatus('Failed to save feed: ' + result.error, 'error');
+      return;
+    }
+    
     showStatus('Feed saved successfully', 'success');
     cancelFeedForm();
     loadConfiguration();
   } catch (error) {
-    showStatus('Failed to save feed', 'error');
+    console.error('Error saving feed:', error);
+    showStatus('Failed to save feed: ' + (error.message || String(error)), 'error');
   }
 }
 

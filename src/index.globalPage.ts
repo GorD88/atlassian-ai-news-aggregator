@@ -72,9 +72,29 @@ resolver.define('global-page-handler', async (req: any) => {
         return { success: true };
 
       case 'upsertFeed':
+        logger.info('UpsertFeed called', {
+          actualPayload,
+          reqPayload: req.payload,
+          hasActualPayloadFeed: !!actualPayload?.feed,
+          hasReqPayloadFeed: !!req.payload?.feed,
+          hasNestedFeed: !!req.payload?.payload?.feed
+        });
         const feed = (actualPayload?.feed || req.payload?.feed || req.payload?.payload?.feed) as FeedConfig;
-        await upsertFeed(feed);
-        return { success: true };
+        logger.info('Extracted feed', { feed, feedId: feed?.id, feedName: feed?.name });
+        
+        if (!feed) {
+          logger.error('Feed is null or undefined', { actualPayload, reqPayload: req.payload });
+          return { error: 'Feed data is missing' };
+        }
+        
+        try {
+          await upsertFeed(feed);
+          logger.info('Feed upserted successfully', { feedId: feed.id });
+          return { success: true };
+        } catch (error) {
+          logger.error('Error upserting feed', { error, feed });
+          return { error: error instanceof Error ? error.message : 'Unknown error' };
+        }
 
       case 'removeFeed':
         const feedId = (actualPayload?.feedId || req.payload?.feedId || req.payload?.payload?.feedId) as string;
