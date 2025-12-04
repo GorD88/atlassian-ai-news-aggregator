@@ -25,10 +25,26 @@ const resolver = new Resolver();
 // Define the handler function
 // The functionKey 'global-page-handler' matches the function key in manifest.yml
 resolver.define('global-page-handler', async (req: any) => {
-  logger.info('Global page handler called', { payload: req.payload });
+  logger.info('Global page handler called', { 
+    req,
+    payload: req.payload,
+    hasPayload: !!req.payload,
+    payloadKeys: req.payload ? Object.keys(req.payload) : []
+  });
   
-  // When using resolver, req.payload contains the actual payload sent from Custom UI
-  const action = req.payload?.action;
+  // When using resolver with Custom UI, the payload structure can vary
+  // Try to get action from different possible locations
+  let action = req.payload?.action;
+  
+  // If action is not in payload, check if it's in the request directly
+  if (!action && req.action) {
+    action = req.action;
+  }
+  
+  // If still no action, check if payload is nested
+  if (!action && req.payload?.payload?.action) {
+    action = req.payload.payload.action;
+  }
 
   try {
     switch (action) {
@@ -38,27 +54,27 @@ resolver.define('global-page-handler', async (req: any) => {
         };
 
       case 'saveConfig':
-        const config = req.payload.config as AppConfig;
+        const config = (req.payload?.config || req.payload?.payload?.config) as AppConfig;
         await saveConfig(config);
         return { success: true };
 
       case 'upsertFeed':
-        const feed = req.payload.feed as FeedConfig;
+        const feed = (req.payload?.feed || req.payload?.payload?.feed) as FeedConfig;
         await upsertFeed(feed);
         return { success: true };
 
       case 'removeFeed':
-        const feedId = req.payload.feedId as string;
+        const feedId = (req.payload?.feedId || req.payload?.payload?.feedId) as string;
         await removeFeed(feedId);
         return { success: true };
 
       case 'upsertTopicMapping':
-        const mapping = req.payload.mapping as TopicMapping;
+        const mapping = (req.payload?.mapping || req.payload?.payload?.mapping) as TopicMapping;
         await upsertTopicMapping(mapping);
         return { success: true };
 
       case 'removeTopicMapping':
-        const topic = req.payload.topic as string;
+        const topic = (req.payload?.topic || req.payload?.payload?.topic) as string;
         await removeTopicMapping(topic);
         return { success: true };
 
@@ -89,10 +105,12 @@ const handler = resolver.getDefinitions();
 export const globalPage = async (payload: any, context: any) => {
   logger.info('=== RESOLVER HANDLER CALLED ===', {
     payload,
+    payloadString: JSON.stringify(payload),
     context: context ? Object.keys(context) : 'no context',
     payloadType: typeof payload,
     hasCall: payload?.call ? 'yes' : 'no',
     functionKey: payload?.call?.functionKey,
+    payloadKeys: payload ? Object.keys(payload) : [],
   });
   
   try {
@@ -100,10 +118,15 @@ export const globalPage = async (payload: any, context: any) => {
     logger.info('=== RESOLVER HANDLER RESULT ===', {
       resultType: typeof result,
       hasError: result?.error ? 'yes' : 'no',
+      resultString: JSON.stringify(result).substring(0, 200),
     });
     return result;
   } catch (error) {
-    logger.error('=== RESOLVER HANDLER ERROR ===', error);
+    logger.error('=== RESOLVER HANDLER ERROR ===', {
+      error,
+      errorMessage: error instanceof Error ? error.message : String(error),
+      errorStack: error instanceof Error ? error.stack : 'no stack',
+    });
     throw error;
   }
 };
