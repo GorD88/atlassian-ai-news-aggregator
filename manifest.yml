@@ -15,11 +15,7 @@ modules:
     - key: ai-news-global
       title: AI News Aggregator
       route: ai-news
-      resource: application
-      resolver:
         function: global-page-handler
-      displayConditions:
-        isLoggedIn: true
 
 permissions:
   external:
@@ -35,15 +31,7 @@ permissions:
   scopes:
     - read:confluence-content.all
     - storage:app
-  content:
-    styles:
-      - unsafe-inline
 
-resources:
-  - key: application
-    path: static/main
-
-app:
   id: ari:cloud:ecosystem::app/2db096a8-4660-4886-800c-eb89dc97d5bf
   runtime:
     name: nodejs20.x
