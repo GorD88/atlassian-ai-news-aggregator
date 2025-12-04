@@ -84,7 +84,9 @@ resolver.define('global-page-handler', async (req: any) => {
 // The handler receives calls from Custom UI bridge and routes them to the correct function
 const handler = resolver.getDefinitions();
 
-export const run = async (payload: any, context: any) => {
+// Export the handler function for Forge runtime
+// This is called when the function is invoked
+export const globalPage = async (payload: any, context: any) => {
   logger.info('=== RESOLVER HANDLER CALLED ===', {
     payload,
     context: context ? Object.keys(context) : 'no context',
@@ -105,4 +107,7 @@ export const run = async (payload: any, context: any) => {
     throw error;
   }
 };
+
+// Also export run for backward compatibility
+export const run = globalPage;
 

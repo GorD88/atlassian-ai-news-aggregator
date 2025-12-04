@@ -63,7 +63,7 @@ You'll be prompted to select your Atlassian site.
 ### Initial Configuration
 
 1. **Access Global Page**:
-   - The "AI News Aggregator" page will appear in your Jira navigation
+   - The "AI News Aggregator" page will appear in your Confluence navigation
    - Click on it to open the configuration interface
 
 2. **Configure Confluence Spaces**:
@@ -137,7 +137,7 @@ forge logs
 ### Global Page Not Loading
 
 - Verify the app is installed
-- Check that the page appears in Jira navigation
+- Check that the page appears in Confluence navigation
 - Check manifest.yml configuration
 - Review Forge logs
 

@@ -11,15 +11,13 @@ modules:
       function: scheduled-trigger
       events:
         - scheduled:feed-parser-schedule
-  jira:globalPage:
+  confluence:globalPage:
     - key: ai-news-global
       title: AI News Aggregator
-      layout: blank
+      route: ai-news
       resource: application
       resolver:
         function: global-page-handler
-      displayConditions:
-        isLoggedIn: true
 
 permissions:
   external:
@@ -34,7 +32,6 @@ permissions:
         - address: https://*.feed
   scopes:
     - read:confluence-content.all
-    - read:jira-work
     - storage:app
   content:
     styles:

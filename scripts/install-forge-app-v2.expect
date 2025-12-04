@@ -49,3 +49,4 @@ wait
 puts "\n=== Installation log ==="
 exec cat /tmp/forge-install-expect.log
 
+

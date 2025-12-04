@@ -12,3 +12,4 @@ echo "Then enter: AI News Aggregator"
 echo ""
 echo "After registration, the app.id in manifest.yml will be updated automatically."
 
+

@@ -10,7 +10,7 @@ A Forge-based application that automatically aggregates AI-related news from mul
 - **Automatic publishing**: Creates Confluence pages with structured content
 - **Deduplication**: Prevents republishing the same news items
 - **Scheduled processing**: Runs automatically on a configurable schedule
-- **Global Page UI**: Web-based interface accessible from Jira navigation for managing feeds, keywords, and mappings
+- **Global Page UI**: Web-based interface accessible from Confluence navigation for managing feeds, keywords, and mappings
 - **Error handling**: Robust error handling with logging and retry capabilities
 
 ## Architecture
@@ -36,7 +36,7 @@ src/
 
 - Node.js 18+ 
 - Atlassian Forge CLI (`npm install -g @forge/cli`)
-- An Atlassian Cloud site (Jira/Confluence)
+- An Atlassian Cloud site (Confluence)
 - Forge app development account
 
 ## Installation
@@ -75,8 +75,8 @@ src/
 
 ### Initial Setup
 
-After installation, access the global page in Jira:
-- The "AI News Aggregator" page will appear in your Jira navigation
+After installation, access the global page in Confluence:
+- The "AI News Aggregator" page will appear in your Confluence navigation
 - Click on it to open the configuration interface
 
 ### Adding Feeds
@@ -111,7 +111,7 @@ The app runs automatically based on the configured schedule (default: every 6 ho
 ### Manual Processing
 
 You can trigger feed processing manually from the global page:
-1. Open the "AI News Aggregator" page from Jira navigation
+1. Open the "AI News Aggregator" page from Confluence navigation
 2. Click **"Process Feeds Now"** in the Actions section
 
 ### Viewing Published Content
@@ -187,7 +187,6 @@ The app comes with default feeds and mappings:
 
 The app requires the following permissions:
 - **Confluence**: Read and write content
-- **Jira**: Read (for app installation)
 - **Storage**: Read-write (for configuration and processed items tracking)
 - **External fetch**: Access to configured feed URLs
 
