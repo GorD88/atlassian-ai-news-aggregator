@@ -26,15 +26,20 @@ const resolver = new Resolver();
 // The functionKey 'global-page-handler' matches the function key in manifest.yml
 resolver.define('global-page-handler', async (req: any) => {
   logger.info('Global page handler called', { 
-    req,
+    reqType: typeof req,
+    reqKeys: req ? Object.keys(req) : [],
     payload: req.payload,
     hasPayload: !!req.payload,
-    payloadKeys: req.payload ? Object.keys(req.payload) : []
+    payloadType: typeof req.payload,
+    payloadKeys: req.payload ? Object.keys(req.payload) : [],
+    payloadString: JSON.stringify(req.payload).substring(0, 500)
   });
   
   // When using resolver with Custom UI, the payload structure can vary
+  // The payload can be directly in req.payload or nested
   // Try to get action from different possible locations
   let action = req.payload?.action;
+  let actualPayload = req.payload;
   
   // If action is not in payload, check if it's in the request directly
   if (!action && req.action) {
@@ -44,7 +49,15 @@ resolver.define('global-page-handler', async (req: any) => {
   // If still no action, check if payload is nested
   if (!action && req.payload?.payload?.action) {
     action = req.payload.payload.action;
+    actualPayload = req.payload.payload;
   }
+  
+  // If payload is the action itself (string), use it
+  if (!action && typeof req.payload === 'string') {
+    action = req.payload;
+  }
+  
+  logger.info('Extracted action and payload', { action, actualPayload });
 
   try {
     switch (action) {
@@ -54,27 +67,27 @@ resolver.define('global-page-handler', async (req: any) => {
         };
 
       case 'saveConfig':
-        const config = (req.payload?.config || req.payload?.payload?.config) as AppConfig;
+        const config = (actualPayload?.config || req.payload?.config || req.payload?.payload?.config) as AppConfig;
         await saveConfig(config);
         return { success: true };
 
       case 'upsertFeed':
-        const feed = (req.payload?.feed || req.payload?.payload?.feed) as FeedConfig;
+        const feed = (actualPayload?.feed || req.payload?.feed || req.payload?.payload?.feed) as FeedConfig;
         await upsertFeed(feed);
         return { success: true };
 
       case 'removeFeed':
-        const feedId = (req.payload?.feedId || req.payload?.payload?.feedId) as string;
+        const feedId = (actualPayload?.feedId || req.payload?.feedId || req.payload?.payload?.feedId) as string;
         await removeFeed(feedId);
         return { success: true };
 
       case 'upsertTopicMapping':
-        const mapping = (req.payload?.mapping || req.payload?.payload?.mapping) as TopicMapping;
+        const mapping = (actualPayload?.mapping || req.payload?.mapping || req.payload?.payload?.mapping) as TopicMapping;
         await upsertTopicMapping(mapping);
         return { success: true };
 
       case 'removeTopicMapping':
-        const topic = (req.payload?.topic || req.payload?.payload?.topic) as string;
+        const topic = (actualPayload?.topic || req.payload?.topic || req.payload?.payload?.topic) as string;
         await removeTopicMapping(topic);
         return { success: true };
 
