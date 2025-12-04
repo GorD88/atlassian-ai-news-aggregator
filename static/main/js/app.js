@@ -37,18 +37,24 @@ function getInvoke() {
     return window.__bridge.invoke.bind(window.__bridge);
   }
   // Fallback to callBridge if invoke is not available
+  // For Custom UI with resolver, callBridge expects the resolver function name
   if (window.__bridge && window.__bridge.callBridge) {
     return (functionName, payload) => {
       return new Promise((resolve, reject) => {
         try {
+          // For resolver, we need to pass the payload in the correct format
+          // The resolver function name is 'global-page-handler'
+          // callBridge will route to the resolver function defined in manifest.yml
           window.__bridge.callBridge(functionName, payload, (error, result) => {
             if (error) {
+              console.error('callBridge error:', error);
               reject(new Error(error.message || String(error)));
             } else {
               resolve(result);
             }
           });
         } catch (err) {
+          console.error('callBridge exception:', err);
           reject(err);
         }
       });
