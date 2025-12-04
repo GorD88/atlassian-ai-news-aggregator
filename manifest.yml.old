@@ -33,6 +33,6 @@ permissions:
     - storage:app
 
 app:
-  id: ari:cloud:ecosystem::app/c8be4e12-360f-4674-9b02-a2aa0b546354
+  id: ari:cloud:ecosystem::app/2db096a8-4660-4886-800c-eb89dc97d5bf
   runtime:
     name: nodejs20.x
