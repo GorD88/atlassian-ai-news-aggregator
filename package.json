@@ -17,6 +17,7 @@
     "@forge/bridge": "^5.9.1",
     "@forge/resolver": "^1.7.1",
     "@forge/runtime": "^3.0.0",
+    "@forge/ui": "^1.11.4",
     "rss-parser": "^3.13.0"
   },
   "devDependencies": {
