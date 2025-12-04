@@ -18,6 +18,8 @@ modules:
       resource: application
       resolver:
         function: global-page-handler
+      displayConditions:
+        isLoggedIn: true
 
 permissions:
   external:
