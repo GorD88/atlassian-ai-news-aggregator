@@ -1,0 +1,89 @@
+#!/usr/bin/expect -f
+
+set timeout 120
+
+# Get environment, product and site URL from command line arguments
+if {[llength $argv] > 0} {
+    set environment [lindex $argv 0]
+} else {
+    set environment "production"
+}
+
+if {[llength $argv] > 1} {
+    set product [lindex $argv 1]
+} else {
+    set product "Confluence"
+}
+
+if {[llength $argv] > 2} {
+    set site_url [lindex $argv 2]
+} else {
+    set site_url "gord.atlassian.net"
+}
+
+spawn forge uninstall -e $environment -p $product -s $site_url
+
+expect {
+    "Select an Atlassian app or platform tool" {
+        send "$product\r"
+        exp_continue
+    }
+    "Select a product" {
+        send "$product\r"
+        exp_continue
+    }
+    "Enter the site URL" {
+        send "$site_url\r"
+        exp_continue
+    }
+    "Enter the site URL*" {
+        send "$site_url\r"
+        exp_continue
+    }
+    "Enter your site" {
+        send "$site_url\r"
+        exp_continue
+    }
+    "Do you want to continue?" {
+        send "y\r"
+        exp_continue
+    }
+    "Uninstall*" {
+        send "y\r"
+        exp_continue
+    }
+    "uninstall*" {
+        send "y\r"
+        exp_continue
+    }
+    "y/N" {
+        send "y\r"
+        exp_continue
+    }
+    "Y/n" {
+        send "y\r"
+        exp_continue
+    }
+    "y/n" {
+        send "y\r"
+        exp_continue
+    }
+    "Uninstalled" {
+        puts "Uninstallation completed successfully"
+        exp_continue
+    }
+    "uninstalled" {
+        puts "Uninstallation completed successfully"
+        exp_continue
+    }
+    timeout {
+        puts "Timeout waiting for prompt"
+        exit 1
+    }
+    eof {
+        puts "Uninstallation completed"
+    }
+}
+
+wait
+
