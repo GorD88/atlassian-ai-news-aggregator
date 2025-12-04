@@ -156,44 +156,69 @@ const handler = resolver.getDefinitions();
 
 // Export the handler function for Forge runtime
 // This is called when the function is invoked
-// For Custom UI with resolver, the payload structure is: { call: { functionKey: '...', payload: {...} } }
+// For Custom UI with resolver, when using callBridge, the payload comes directly without 'call' wrapper
 export const globalPage = async (payload: any, context: any) => {
   logger.info('=== RESOLVER HANDLER CALLED ===', {
     payload,
-    payloadString: JSON.stringify(payload),
+    payloadString: JSON.stringify(payload).substring(0, 1000),
     context: context ? Object.keys(context) : 'no context',
     payloadType: typeof payload,
     hasCall: payload?.call ? 'yes' : 'no',
     functionKey: payload?.call?.functionKey,
     payloadKeys: payload ? Object.keys(payload) : [],
+    isArray: Array.isArray(payload),
+    isObject: typeof payload === 'object' && payload !== null,
   });
   
   try {
-    // The resolver handler expects the payload in the format: { call: { functionKey: '...', payload: {...} } }
-    // But when using callBridge, it might come in a different format
-    // Let's ensure the payload is in the correct format
+    // For Custom UI with resolver using callBridge, the payload structure can be:
+    // 1. Direct payload: { action: '...', ... }
+    // 2. Wrapped in call: { call: { functionKey: '...', payload: {...} } }
+    // 3. The payload itself might be the data
+    
     let processedPayload = payload;
     
-    // If payload doesn't have 'call' structure, wrap it
-    if (!payload?.call && payload) {
-      // Check if it's already the payload we need
-      if (payload.action || payload.feed || payload.config) {
-        // This is the actual payload, wrap it in call structure
-        processedPayload = {
-          call: {
-            functionKey: 'global-page-handler',
-            payload: payload
-          }
-        };
-        logger.info('Wrapped payload in call structure', { processedPayload });
-      }
+    // If payload has 'call' structure, use it as is
+    if (payload?.call) {
+      processedPayload = payload;
+      logger.info('Using payload with call structure');
     }
+    // If payload is direct (from callBridge), wrap it
+    else if (payload && (payload.action || payload.feed || payload.config || payload.feedId || payload.topic || payload.mapping)) {
+      // This is the actual payload from callBridge, wrap it in call structure
+      processedPayload = {
+        call: {
+          functionKey: 'global-page-handler',
+          payload: payload
+        }
+      };
+      logger.info('Wrapped direct payload in call structure', { 
+        originalPayload: payload,
+        processedPayload 
+      });
+    }
+    // If payload is empty or undefined, create empty call structure
+    else {
+      processedPayload = {
+        call: {
+          functionKey: 'global-page-handler',
+          payload: payload || {}
+        }
+      };
+      logger.info('Created call structure for empty payload');
+    }
+    
+    logger.info('Calling resolver handler with processed payload', {
+      processedPayloadKeys: processedPayload ? Object.keys(processedPayload) : [],
+      hasCall: processedPayload?.call ? 'yes' : 'no',
+      functionKey: processedPayload?.call?.functionKey,
+    });
     
     const result = await handler(processedPayload, context);
     logger.info('=== RESOLVER HANDLER RESULT ===', {
       resultType: typeof result,
       hasError: result?.error ? 'yes' : 'no',
-      resultString: JSON.stringify(result).substring(0, 200),
+      resultString: JSON.stringify(result).substring(0, 500),
     });
     return result;
   } catch (error) {
@@ -201,6 +226,7 @@ export const globalPage = async (payload: any, context: any) => {
       error,
       errorMessage: error instanceof Error ? error.message : String(error),
       errorStack: error instanceof Error ? error.stack : 'no stack',
+      payload: JSON.stringify(payload).substring(0, 500),
     });
     throw error;
   }
